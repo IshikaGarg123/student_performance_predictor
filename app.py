@@ -681,253 +681,174 @@ elif page == "🔍 Smart Student Search":
 elif page == "📊 Student Prediction":
     section_header("📊", "Student Performance Prediction")
     st.markdown(
-        f"<p style='color:{PALETTE['muted']};margin-top:-12px;'>Select an existing student and adjust factors to see predicted performance.</p>",
+        f"<p style='color:{PALETTE['muted']};margin-top:-12px;'>"
+        "Select an existing student and adjust factors to see predicted performance.</p>",
         unsafe_allow_html=True,
     )
 
-    student_names = df["Student_Name"].tolist()
-    sel_student = st.selectbox("Select Student", student_names)
-    srow = df[df["Student_Name"] == sel_student].iloc[0]
+    student_names = df['Student_Name'].tolist()
+    sel_student   = st.selectbox("Select Student", student_names)
+    srow          = df[df['Student_Name'] == sel_student].iloc[0]
 
     st.markdown(
-        f"<div style='background:{PALETTE['card']};border-radius:12px;padding:16px;margin:8px 0 20px;'>Editing profile for <b style='color:{PALETTE['accent2']};'>{sel_student}</b> (UID: {srow['UID']})</div>",
+        f"<div style='background:{PALETTE['card']};border-radius:12px;padding:16px;margin:8px 0 20px;'>"
+        f"Editing profile for <b style='color:{PALETTE['accent2']};'>{sel_student}</b> "
+        f"(UID: {srow['UID']})</div>",
         unsafe_allow_html=True,
     )
 
-    # Input sliders in two columns
     col1, col2 = st.columns(2)
-    inputs = {}
+    inputs     = {}
 
     with col1:
         st.markdown("**📚 Academic Factors**")
-        inputs["Attendance_%"] = st.slider(
-            "Attendance %", 0, 100, int(srow["Attendance_%"])
-        )
-        inputs["Study_Hours_Per_Day"] = st.slider(
-            "Study Hours/Day", 0.0, 12.0, float(srow["Study_Hours_Per_Day"]), 0.1
-        )
-        inputs["Class_Test_Avg"] = st.slider(
-            "Class Test Avg", 0, 100, int(srow["Class_Test_Avg"])
-        )
-        inputs["Midterm_Score"] = st.slider(
-            "Midterm Score", 0, 100, int(srow["Midterm_Score"])
-        )
-        inputs["Assignment_Score"] = st.slider(
-            "Assignment Score", 0, 100, int(srow["Assignment_Score"])
-        )
-        inputs["Previous_Exam_Score"] = st.slider(
-            "Previous Exam Score", 0, 100, int(srow["Previous_Exam_Score"])
-        )
-        inputs["Homework_Completion_%"] = st.slider(
-            "Homework Completion %", 0, 100, int(srow["Homework_Completion_%"])
-        )
+        inputs['Attendance_%']          = st.slider("Attendance %",          0,   100, int(srow['Attendance_%']))
+        inputs['Study_Hours_Per_Day']   = st.slider("Study Hours/Day",       0.0, 12.0, float(srow['Study_Hours_Per_Day']), 0.1)
+        inputs['Class_Test_Avg']        = st.slider("Class Test Avg",        0,   100, int(srow['Class_Test_Avg']))
+        inputs['Midterm_Score']         = st.slider("Midterm Score",         0,   100, int(srow['Midterm_Score']))
+        inputs['Assignment_Score']      = st.slider("Assignment Score",      0,   100, int(srow['Assignment_Score']))
+        inputs['Previous_Exam_Score']   = st.slider("Previous Exam Score",   0,   100, int(srow['Previous_Exam_Score']))
+        inputs['Homework_Completion_%'] = st.slider("Homework Completion %", 0,   100, int(srow['Homework_Completion_%']))
 
     with col2:
         st.markdown("**🧬 Behavioral & Lifestyle Factors**")
-        inputs["Sleep_Hours"] = st.slider(
-            "Sleep Hours", 0.0, 12.0, float(srow["Sleep_Hours"]), 0.5
-        )
-        inputs["Participation_Level"] = st.slider(
-            "Participation Level", 1, 5, int(srow["Participation_Level"])
-        )
-        inputs["Extra_Classes"] = st.selectbox(
-            "Extra Classes", [0, 1], index=int(srow["Extra_Classes"])
-        )
-        inputs["Internet_Access"] = st.selectbox(
-            "Internet Access", [0, 1], index=int(srow["Internet_Access"])
-        )
-        inputs["Stress_Level"] = st.slider(
-            "Stress Level", 1, 5, int(srow["Stress_Level"])
-        )
-        inputs["Health_Status"] = st.slider(
-            "Health Status", 1, 5, int(srow["Health_Status"])
-        )
-        inputs["Sports_Participation"] = st.selectbox(
-            "Sports Participation", [0, 1], index=int(srow["Sports_Participation"])
-        )
-        inputs["CoCurricular_Activities"] = st.selectbox(
-            "Co-Curricular Activities",
-            [0, 1],
-            index=int(srow["CoCurricular_Activities"]),
-        )
+        inputs['Sleep_Hours']             = st.slider("Sleep Hours",            0.0, 12.0, float(srow['Sleep_Hours']), 0.5)
+        inputs['Participation_Level']     = st.slider("Participation Level",    1, 5, int(srow['Participation_Level']))
+        inputs['Extra_Classes']           = st.selectbox("Extra Classes",           [0, 1], index=int(srow['Extra_Classes']))
+        inputs['Internet_Access']         = st.selectbox("Internet Access",         [0, 1], index=int(srow['Internet_Access']))
+        inputs['Stress_Level']            = st.slider("Stress Level",           1, 5, int(srow['Stress_Level']))
+        inputs['Health_Status']           = st.slider("Health Status",          1, 5, int(srow['Health_Status']))
+        inputs['Sports_Participation']    = st.selectbox("Sports Participation",    [0, 1], index=int(srow['Sports_Participation']))
+        inputs['CoCurricular_Activities'] = st.selectbox("Co-Curricular Activities",[0, 1], index=int(srow['CoCurricular_Activities']))
 
     if st.button("🚀 Predict Performance"):
-        pred = predict_score(model, inputs)
-        cat = score_to_cat(pred)
-        rl, rc = risk_level(pred, inputs["Attendance_%"], inputs["Study_Hours_Per_Day"])
-        cc = cat_color(cat)
-        tips = ai_suggestions(
-            pred,
-            inputs["Attendance_%"],
-            inputs["Study_Hours_Per_Day"],
-            inputs["Stress_Level"],
-            inputs["Health_Status"],
-            inputs["Participation_Level"],
-            inputs["Homework_Completion_%"],
-            inputs["Sleep_Hours"],
+        st.session_state['pred']        = predict_score(model, inputs)
+        st.session_state['cat']         = score_to_cat(st.session_state['pred'])
+        st.session_state['rl'], st.session_state['rc'] = risk_level(
+            st.session_state['pred'], inputs['Attendance_%'], inputs['Study_Hours_Per_Day']
         )
+        st.session_state['tips']        = ai_suggestions(
+            st.session_state['pred'], inputs['Attendance_%'], inputs['Study_Hours_Per_Day'],
+            inputs['Stress_Level'], inputs['Health_Status'],
+            inputs['Participation_Level'], inputs['Homework_Completion_%'], inputs['Sleep_Hours'],
+        )
+        st.session_state['inputs']      = inputs
+        st.session_state['sel_student'] = sel_student
+        st.session_state['srow_uid']    = srow['UID']
+
+    if 'pred' in st.session_state:
+        pred        = st.session_state['pred']
+        cat         = st.session_state['cat']
+        rl          = st.session_state['rl']
+        rc          = st.session_state['rc']
+        tips        = st.session_state['tips']
+        inputs      = st.session_state['inputs']
+        sel_student = st.session_state['sel_student']
+        srow_uid    = st.session_state['srow_uid']
+        cc          = cat_color(cat)
 
         st.markdown("<br>", unsafe_allow_html=True)
         r1, r2, r3 = st.columns(3)
         with r1:
-            st.markdown(
-                f"""
+            st.markdown(f"""
             <div class="stat-card" style="border-top:3px solid {cc};height:160px;">
                 <div class="stat-icon">🎯</div>
                 <div class="stat-val" style="color:{cc};font-size:2.5rem;">{pred:.1f}</div>
                 <div class="stat-label">Predicted Final Score</div>
-            </div>""",
-                unsafe_allow_html=True,
-            )
+            </div>""", unsafe_allow_html=True)
         with r2:
-            st.markdown(
-                f"""
+            st.markdown(f"""
             <div class="stat-card" style="border-top:3px solid {cc};height:160px;">
                 <div class="stat-icon">📌</div>
                 <div class="stat-val" style="color:{cc};font-size:1.4rem;">{cat}</div>
                 <div class="stat-label">Performance Category</div>
-            </div>""",
-                unsafe_allow_html=True,
-            )
+            </div>""", unsafe_allow_html=True)
         with r3:
-            st.markdown(
-                f"""
+            st.markdown(f"""
             <div class="stat-card" style="border-top:3px solid {rc};height:160px;">
                 <div class="stat-icon">⚡</div>
                 <div class="stat-val" style="color:{rc};font-size:1.4rem;">{rl}</div>
                 <div class="stat-label">Risk Level</div>
-            </div>""",
-                unsafe_allow_html=True,
-            )
+            </div>""", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("### 🤖 AI Recommendations")
         for tip in tips:
             st.markdown(
-                f"<div style='padding:12px 16px;background:{PALETTE['card2']};border-radius:10px;margin-bottom:8px;font-size:.9rem;'>{tip}</div>",
+                f"<div style='padding:12px 16px;background:{PALETTE['card2']};border-radius:10px;"
+                f"margin-bottom:8px;font-size:.9rem;'>{tip}</div>",
                 unsafe_allow_html=True,
             )
 
-        # PDF Report Card
         st.markdown("<br>", unsafe_allow_html=True)
         section_header("📄", "Generate PDF Report Card")
+
         if st.button("📥 Generate PDF Report Card"):
             try:
                 from reportlab.lib.pagesizes import A4
                 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
                 from reportlab.platypus import (
-                    SimpleDocTemplate,
-                    Paragraph,
-                    Spacer,
-                    Table,
-                    TableStyle,
-                    Image as RLImage,
+                    SimpleDocTemplate, Paragraph, Spacer,
+                    Table, TableStyle, Image as RLImage,
                 )
                 from reportlab.lib import colors
                 from reportlab.lib.units import cm
 
                 pdf_buf = io.BytesIO()
-                doc = SimpleDocTemplate(
-                    pdf_buf,
-                    pagesize=A4,
-                    rightMargin=2 * cm,
-                    leftMargin=2 * cm,
-                    topMargin=2 * cm,
-                    bottomMargin=2 * cm,
+                doc     = SimpleDocTemplate(
+                    pdf_buf, pagesize=A4,
+                    rightMargin=2*cm, leftMargin=2*cm,
+                    topMargin=2*cm,   bottomMargin=2*cm,
                 )
                 styles = getSampleStyleSheet()
-                story = []
+                story  = []
 
-                title_s = ParagraphStyle(
-                    "Title",
-                    parent=styles["Heading1"],
-                    fontSize=22,
-                    spaceAfter=6,
-                    textColor=colors.HexColor("#6c63ff"),
-                )
-                sub_s = ParagraphStyle(
-                    "Sub",
-                    parent=styles["Normal"],
-                    fontSize=11,
-                    textColor=colors.grey,
-                )
-                h2_s = ParagraphStyle(
-                    "H2",
-                    parent=styles["Heading2"],
-                    fontSize=14,
-                    spaceAfter=4,
-                    textColor=colors.HexColor("#00d4aa"),
-                )
+                title_s = ParagraphStyle('Title', parent=styles['Heading1'],
+                    fontSize=22, spaceAfter=6, textColor=colors.HexColor('#6c63ff'))
+                sub_s = ParagraphStyle('Sub', parent=styles['Normal'],
+                    fontSize=11, textColor=colors.grey)
+                h2_s = ParagraphStyle('H2', parent=styles['Heading2'],
+                    fontSize=14, spaceAfter=4, textColor=colors.HexColor('#00d4aa'))
 
                 story.append(Paragraph("EduPredict Pro — Report Card", title_s))
-                story.append(
-                    Paragraph(
-                        f"Generated: {datetime.now().strftime('%B %d, %Y %H:%M')}",
-                        sub_s,
-                    )
-                )
-                story.append(Spacer(1, 0.4 * cm))
-                story.append(
-                    Paragraph(
-                        f"Student: <b>{sel_student}</b>  |  UID: {srow['UID']}",
-                        styles["Normal"],
-                    )
-                )
-                story.append(
-                    Paragraph(
-                        f"Predicted Score: <b>{pred:.1f}/100</b>  |  "
-                        f"Category: <b>{cat}</b>  |  Risk: <b>{rl}</b>",
-                        styles["Normal"],
-                    )
-                )
-                story.append(Spacer(1, 0.5 * cm))
+                story.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y %H:%M')}", sub_s))
+                story.append(Spacer(1, 0.4*cm))
+                story.append(Paragraph(f"Student: <b>{sel_student}</b>  |  UID: {srow_uid}", styles['Normal']))
+                story.append(Paragraph(
+                    f"Predicted Score: <b>{pred:.1f}/100</b>  |  Category: <b>{cat}</b>  |  Risk: <b>{rl}</b>",
+                    styles['Normal']))
+                story.append(Spacer(1, 0.5*cm))
 
                 story.append(Paragraph("Performance Metrics", h2_s))
                 data = [["Metric", "Value"]] + [
-                    [FEATURE_LABELS.get(k, k), str(round(v, 2))]
-                    for k, v in inputs.items()
+                    [FEATURE_LABELS.get(k, k), str(round(v, 2))] for k, v in inputs.items()
                 ]
-                tbl = Table(data, colWidths=[8 * cm, 6 * cm])
-                tbl.setStyle(
-                    TableStyle(
-                        [
-                            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#6c63ff")),
-                            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                            (
-                                "ROWBACKGROUNDS",
-                                (0, 1),
-                                (-1, -1),
-                                [colors.HexColor("#f0f0f0"), colors.white],
-                            ),
-                            ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
-                            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        ]
-                    )
-                )
+                tbl = Table(data, colWidths=[8*cm, 6*cm])
+                tbl.setStyle(TableStyle([
+                    ('BACKGROUND',     (0, 0), (-1,  0), colors.HexColor('#6c63ff')),
+                    ('TEXTCOLOR',      (0, 0), (-1,  0), colors.white),
+                    ('FONTNAME',       (0, 0), (-1,  0), 'Helvetica-Bold'),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f0f0f0'), colors.white]),
+                    ('TEXTCOLOR',      (0, 1), (-1, -1), colors.black),
+                    ('GRID',           (0, 0), (-1, -1), 0.5, colors.grey),
+                ]))
                 story.append(tbl)
-                story.append(Spacer(1, 0.5 * cm))
+                story.append(Spacer(1, 0.5*cm))
 
-                fig_r = make_radar_chart(inputs, title=f"{sel_student} — Profile Radar")
+                fig_r   = make_radar_chart(inputs, title=f"{sel_student} — Profile Radar")
                 img_buf = io.BytesIO()
-                fig_r.savefig(
-                    img_buf,
-                    format="png",
-                    dpi=120,
-                    bbox_inches="tight",
-                    facecolor="#1a1d27",
-                )
+                fig_r.savefig(img_buf, format='png', dpi=120, bbox_inches='tight', facecolor='#1a1d27')
                 img_buf.seek(0)
                 plt.close(fig_r)
                 story.append(Paragraph("Performance Radar Chart", h2_s))
-                story.append(RLImage(img_buf, width=10 * cm, height=10 * cm))
-                story.append(Spacer(1, 0.4 * cm))
+                story.append(RLImage(img_buf, width=10*cm, height=10*cm))
+                story.append(Spacer(1, 0.4*cm))
 
                 story.append(Paragraph("AI Recommendations", h2_s))
                 for tip in tips:
-                    clean = tip.replace("**", "").replace("*", "")
-                    story.append(Paragraph(f"• {clean}", styles["Normal"]))
-                    story.append(Spacer(1, 0.15 * cm))
+                    clean = tip.replace('**', '').replace('*', '')
+                    story.append(Paragraph(f"• {clean}", styles['Normal']))
+                    story.append(Spacer(1, 0.15*cm))
 
                 doc.build(story)
                 pdf_buf.seek(0)
