@@ -616,7 +616,6 @@ elif page == "📊 Student Prediction":
         except ImportError:
             HAS_RL = False
 
-        if HAS_RL:
             if st.button("📥 Generate PDF Report Card"):
     try:
         pdf_buf = io.BytesIO()
