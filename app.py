@@ -617,67 +617,72 @@ elif page == "📊 Student Prediction":
             HAS_RL = False
 
         if HAS_RL:
-            if st.button("📥 Download PDF Report Card"):
-                pdf_buf = io.BytesIO()
-                doc = SimpleDocTemplate(pdf_buf, pagesize=A4,
-                                        rightMargin=2*cm, leftMargin=2*cm,
-                                        topMargin=2*cm, bottomMargin=2*cm)
-                styles  = getSampleStyleSheet()
-                story   = []
-                title_s = ParagraphStyle('Title', parent=styles['Heading1'],
-                                          fontSize=22, spaceAfter=6, textColor=colors.HexColor('#6c63ff'))
-                sub_s   = ParagraphStyle('Sub', parent=styles['Normal'],
-                                          fontSize=11, textColor=colors.grey)
-                h2_s    = ParagraphStyle('H2', parent=styles['Heading2'],
-                                          fontSize=14, spaceAfter=4, textColor=colors.HexColor('#00d4aa'))
+            if st.button("📥 Generate PDF Report Card"):
+    try:
+        pdf_buf = io.BytesIO()
+        doc = SimpleDocTemplate(pdf_buf, pagesize=A4,
+                                rightMargin=2*cm, leftMargin=2*cm,
+                                topMargin=2*cm, bottomMargin=2*cm)
+        styles  = getSampleStyleSheet()
+        story   = []
+        title_s = ParagraphStyle('Title', parent=styles['Heading1'],
+                                  fontSize=22, spaceAfter=6, textColor=colors.HexColor('#6c63ff'))
+        sub_s   = ParagraphStyle('Sub', parent=styles['Normal'],
+                                  fontSize=11, textColor=colors.grey)
+        h2_s    = ParagraphStyle('H2', parent=styles['Heading2'],
+                                  fontSize=14, spaceAfter=4, textColor=colors.HexColor('#00d4aa'))
 
-                story.append(Paragraph(f"🎓 EduPredict Pro — Report Card", title_s))
-                story.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y %H:%M')}", sub_s))
-                story.append(Spacer(1, 0.4*cm))
-                story.append(Paragraph(f"Student: <b>{sel_student}</b>  |  UID: {srow['UID']}", styles['Normal']))
-                story.append(Paragraph(f"Predicted Score: <b>{pred:.1f}/100</b>  |  Category: <b>{cat}</b>  |  Risk: <b>{rl}</b>", styles['Normal']))
-                story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph("EduPredict Pro — Report Card", title_s))
+        story.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y %H:%M')}", sub_s))
+        story.append(Spacer(1, 0.4*cm))
+        story.append(Paragraph(f"Student: <b>{sel_student}</b>  |  UID: {srow['UID']}", styles['Normal']))
+        story.append(Paragraph(f"Predicted Score: <b>{pred:.1f}/100</b>  |  Category: <b>{cat}</b>  |  Risk: <b>{rl}</b>", styles['Normal']))
+        story.append(Spacer(1, 0.5*cm))
 
-                story.append(Paragraph("Performance Metrics", h2_s))
-                data = [["Metric", "Value"]] + [[FEATURE_LABELS.get(k, k), str(round(v, 2))] for k, v in inputs.items()]
-                tbl = Table(data, colWidths=[8*cm, 6*cm])
-                tbl.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#6c63ff')),
-                    ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-                    ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#1a1d27'), colors.HexColor('#20243a')]),
-                    ('TEXTCOLOR', (0,1), (-1,-1), colors.HexColor('#e8eaf6')),
-                    ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#2d3154')),
-                    ('ROUNDEDCORNERS', [6]),
-                ]))
-                story.append(tbl)
-                story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph("Performance Metrics", h2_s))
+        data = [["Metric", "Value"]] + [[FEATURE_LABELS.get(k, k), str(round(v, 2))] for k, v in inputs.items()]
+        tbl = Table(data, colWidths=[8*cm, 6*cm])
+        tbl.setStyle(TableStyle([
+            ('BACKGROUND',     (0, 0), (-1, 0), colors.HexColor('#6c63ff')),
+            ('TEXTCOLOR',      (0, 0), (-1, 0), colors.white),
+            ('FONTNAME',       (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f0f0f0'), colors.white]),
+            ('TEXTCOLOR',      (0, 1), (-1, -1), colors.black),
+            ('GRID',           (0, 0), (-1, -1), 0.5, colors.grey),
+        ]))
+        story.append(tbl)
+        story.append(Spacer(1, 0.5*cm))
 
-                # Radar chart image
-                fig_r = make_radar_chart(inputs, title=f"{sel_student} — Profile Radar")
-                img_buf = io.BytesIO()
-                fig_r.savefig(img_buf, format='png', dpi=120, bbox_inches='tight', facecolor='#1a1d27')
-                img_buf.seek(0)
-                plt.close(fig_r)
-                story.append(Paragraph("Performance Radar Chart", h2_s))
-                story.append(RLImage(img_buf, width=10*cm, height=10*cm))
-                story.append(Spacer(1, 0.4*cm))
+        # Radar chart
+        fig_r   = make_radar_chart(inputs, title=f"{sel_student} — Profile Radar")
+        img_buf = io.BytesIO()
+        fig_r.savefig(img_buf, format='png', dpi=120,
+                      bbox_inches='tight', facecolor='#1a1d27')
+        img_buf.seek(0)
+        plt.close(fig_r)
+        story.append(Paragraph("Performance Radar Chart", h2_s))
+        story.append(RLImage(img_buf, width=10*cm, height=10*cm))
+        story.append(Spacer(1, 0.4*cm))
 
-                story.append(Paragraph("AI Recommendations", h2_s))
-                for tip in tips:
-                    clean = tip.replace('**', '').replace('*', '')
-                    story.append(Paragraph(f"• {clean}", styles['Normal']))
-                    story.append(Spacer(1, 0.15*cm))
+        story.append(Paragraph("AI Recommendations", h2_s))
+        for tip in tips:
+            clean = tip.replace('**', '').replace('*', '')
+            story.append(Paragraph(f"• {clean}", styles['Normal']))
+            story.append(Spacer(1, 0.15*cm))
 
-                doc.build(story)
-                pdf_buf.seek(0)
-                b64 = base64.b64encode(pdf_buf.read()).decode()
-                href = f'<a href="data:application/pdf;base64,{b64}" download="{sel_student.replace(" ","_")}_report.pdf" style="background:linear-gradient(135deg,#6c63ff,#00d4aa);color:white;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">📥 Download Report Card PDF</a>'
-                st.markdown(href, unsafe_allow_html=True)
-        else:
-            st.info("Install `reportlab` to enable PDF generation: `pip install reportlab`")
+        doc.build(story)
+        pdf_buf.seek(0)
 
+        st.download_button(
+            label="📥 Download Report Card PDF",
+            data=pdf_buf,
+            file_name=f"{sel_student.replace(' ', '_')}_report.pdf",
+            mime="application/pdf"
+        )
+        st.success("✅ PDF ready! Click the button above to download.")
 
+    except Exception as e:
+        st.error(f"PDF generation failed: {e}")
 # ─────────────────────────────────────────────
 #  PAGE 4 — CLASS ANALYTICS
 # ─────────────────────────────────────────────
